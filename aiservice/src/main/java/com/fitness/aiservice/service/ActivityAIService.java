@@ -14,9 +14,32 @@ public class ActivityAIService {
     public String generateRecommendation(Activity activity) {
         log.info("Generating recommendation for activity: {}", activity);
         String prompt = createPromptForActivity(activity);
-        String response = geminiService.getAnswer(prompt);
-        log.info("Generated response: {}", response);
-        return response;
+        String aiResponse = geminiService.getAnswer(prompt);
+        log.info("Generated response: {}", aiResponse);
+        processAiResponse(activity,aiResponse);
+        return aiResponse;
+    }
+
+    private void processAiResponse(Activity activity, String aiResponse) {
+      try{
+          ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(aiResponse);
+            JsonNode textNode = rootNode.path("candidates")
+                    .get(0)
+                    .path("content")
+                    .path("parts")
+                    .get(0)
+                    .path("text");
+            String jsonContent = textNode.asText()
+                    .replaceAll("```json\\n","")
+                    .replaceAll("\\n```","")
+                    .trim();
+          log.info("Parsed response from AI : {}", jsonContent);
+      }
+      catch (Exception e) {
+          log.error("Error processing AI response for activity {}: {}", activity.getId(), e.getMessage());
+          throw new RuntimeException("Failed to process AI response", e);
+      }
     }
 
     private String createPromptForActivity(Activity activity) {
