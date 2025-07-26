@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ActivityMessageListener {
 
-    private final ActivityAIService aiService
+    private final ActivityAIService aiService;
     @RabbitListener(queues = "activity.queue")
     public void ProcessActivity(Activity activity){
       log.info("Processing activity: {}", activity.getId());
